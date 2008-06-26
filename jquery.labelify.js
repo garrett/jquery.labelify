@@ -44,7 +44,7 @@ jQuery.fn.labelify = function(settings) {
       lookup = lookups[settings.text]; // what if not there?
     } else {
       lookup = settings.text; // what if not a fn?
-    };
+    }
     // bail if lookup isn't a function or if it returns undefined
     if (typeof lookup !== "function") { return; }
     var lookupval = lookup(this);
@@ -71,7 +71,7 @@ jQuery.fn.labelify = function(settings) {
           this.value = this.defaultValue;
           $(this).removeClass(settings.labelledClass);
         }
-      })
+      });
     };
     
     $(this).parents("form").submit(removeValuesOnExit);
