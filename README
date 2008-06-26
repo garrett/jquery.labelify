@@ -1,6 +1,6 @@
 labelify: a jQuery plugin to add labels to your textboxes
 
-  (This is a text-only adaptation from http://www.kryogenix.org/days/2008/06/25/labelify-add-labels-to-textboxes-with-jquery.)
+  This is a text-only adaptation from http://www.kryogenix.org/days/2008/06/25/labelify-add-labels-to-textboxes-with-jquery
 
   A fairly common design pattern in web forms is to have some explanatory
   help text for a textfield appear inside the text field, and then remove
