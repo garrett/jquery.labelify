@@ -2,30 +2,29 @@
  * jQuery.labelify - Display in-textbox hints
  * Stuart Langridge, http://www.kryogenix.org/
  * Released into the public domain
- * Date: 25th June 2008
+ * Date: 25 June 2008
+ * Last update: 08 September 2008
  * @author Stuart Langridge
  * @author Garrett LeSage
- * @version 1.3.3
- *
- *
- * Basic calling syntax: $("input").labelify();
+ * @version 2.0
+ */
+
+/**
  * Defaults to taking the in-field label from the field's title attribute
+ * @example $("input").labelify();
+ * @param {object|string} [settings] optional parameters to pass
+ * @config {string} [text] "title" to use the field's title attribute (default),
+ *                         "label" to use its <label> (for="fieldid" must be specified)
+ * @config {string} [labeledClass] class applied to the field when it has label text
  *
- * You can also pass an options object with the following keys:
- *   text
- *     "title" to get the in-field label from the field's title attribute 
- *      (this is the default)
- *     "label" to get the in-field label from the inner text of the field's label
- *      (note that the label must be attached to the field with for="fieldid")
- *     a function which takes one parameter, the input field, and returns
- *      whatever text it likes
- *
- *   labeledClass
- *     a class that will be applied to the input field when it contains the
- *      label and removed when it contains user input. Defaults to blank.
- *  
+ * @example $('input').labelify('hasLabel'); // return true if the field has a label
  */
 jQuery.fn.labelify = function(settings) {
+  // if the element has a label, return true when 'hasLabel' is passed as an arg
+  if (typeof settings === 'string' && settings === 'hasLabel') {
+    return $(this).data('hasLabel');
+  }
+
   settings = jQuery.extend({
     text: 'title',
     labeledClass: ''
@@ -51,11 +50,11 @@ jQuery.fn.labelify = function(settings) {
 
   showLabel = function(el){
     el.value = $(el).data("label");
-    $(el).addClass(settings.labeledClass);
+    $(el).addClass(settings.labeledClass).data('hasLabel', true);
   };
   hideLabel = function(el){
     el.value = el.defaultValue;
-    $(el).removeClass(settings.labeledClass);
+    $(el).removeClass(settings.labeledClass).data('hasLabel', false);
   };
 
   return $(this).each(function() {
