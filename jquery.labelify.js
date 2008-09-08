@@ -4,7 +4,8 @@
  * Released into the public domain
  * Date: 25th June 2008
  * @author Stuart Langridge
- * @version 1.3
+ * @author Garrett LeSage
+ * @version 1.3.3
  *
  *
  * Basic calling syntax: $("input").labelify();
@@ -19,71 +20,78 @@
  *     a function which takes one parameter, the input field, and returns
  *      whatever text it likes
  *
- *   labelledClass
+ *   labeledClass
  *     a class that will be applied to the input field when it contains the
  *      label and removed when it contains user input. Defaults to blank.
  *  
  */
 jQuery.fn.labelify = function(settings) {
   settings = jQuery.extend({
-    text: "title",
-    labelledClass: ""
+    text: 'title',
+    labeledClass: ''
   }, settings);
-  var lookups = {
+
+  // Compatibility with version 1.3 and prior (double-ls)
+  if (settings.labelledClass) { settings.labeledClass = settings.labelledClass; }
+
+  var showLabel, hideLabel,
+      lookups, lookup,
+      $labelified_elements;
+
+  lookups = {
     title: function(input) {
-      return $(input).attr("title");
+      return $(input).attr('title');
     },
     label: function(input) {
       return $("label[for=" + input.id +"]").text();
     }
   };
-  var lookup;
-  var jQuery_labellified_elements = $(this);
+
+  $labelified_elements = $(this);
+
+  showLabel = function(el){
+    el.value = $(el).data("label");
+    $(el).addClass(settings.labeledClass);
+  };
+  hideLabel = function(el){
+    el.value = el.defaultValue;
+    $(el).removeClass(settings.labeledClass);
+  };
+
   return $(this).each(function() {
-    if (typeof settings.text === "string") {
+    var $item = $(this),
+        removeValuesOnExit;
+
+    if (typeof settings.text === 'string') {
       lookup = lookups[settings.text]; // what if not there?
     } else {
       lookup = settings.text; // what if not a fn?
     }
-    // bail if lookup isn't a function or if it returns undefined
-    if (typeof lookup !== "function") { return; }
-    var lookupval = lookup(this);
-    if (!lookupval) { return; }
 
-    // need to strip newlines because the browser strips them
-    // if you set textbox.value to a string containing them    
-    $(this).data("label",lookup(this).replace(/\n/g,''));
-    $(this).focus(function() {
-      if (this.value === $(this).data("label")) {
-        this.value = this.defaultValue;
-        $(this).removeClass(settings.labelledClass);
-      }
-    }).blur(function(){
-      if (this.value === this.defaultValue) {
-        this.value = $(this).data("label");
-        $(this).addClass(settings.labelledClass);
-      }
-    });
+    // bail if lookup isn't a function or if it returns undefined
+    if (typeof lookup !== "function" || !lookup(this)) { return; }
+
+    $item.bind('focus.label',function() {
+      if (this.value === $(this).data("label")) { hideLabel(this); }
+    }).bind('blur.label',function(){
+      if (this.value === this.defaultValue) { showLabel(this); }
+    }).data('label',lookup(this).replace(/\n/g,'')); // strip label's newlines
     
-    var removeValuesOnExit = function() {
-      jQuery_labellified_elements.each(function(){
-        if (this.value === $(this).data("label")) {
-          this.value = this.defaultValue;
-          $(this).removeClass(settings.labelledClass);
-        }
+    removeValuesOnExit = function() {
+      $labelified_elements.each(function(){
+        if (this.value === $(this).data("label")) { hideLabel(this); }
       });
     };
     
-    $(this).parents("form").submit(removeValuesOnExit);
+    $item.parents("form").submit(removeValuesOnExit);
     $(window).unload(removeValuesOnExit);
     
     if (this.value !== this.defaultValue) {
-      // user already started typing; don't overwrite their work!
+      // user started typing; don't overwrite his/her text!
       return;
     }
-    // actually set the value
-    this.value = $(this).data("label");
-    $(this).addClass(settings.labelledClass);
 
+    // set the defaults
+    showLabel(this);
   });
 };
