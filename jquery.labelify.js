@@ -49,11 +49,12 @@ jQuery.fn.labelify = function(settings) {
   $labelified_elements = $(this);
 
   showLabel = function(el){
+    $(el).data('value', el.value);
     el.value = $(el).data("label");
     $(el).addClass(settings.labeledClass).data('hasLabel', true);
   };
   hideLabel = function(el){
-    el.value = el.defaultValue;
+    el.value = $(el).data('value');
     $(el).removeClass(settings.labeledClass).data('hasLabel', false);
   };
 
@@ -73,8 +74,10 @@ jQuery.fn.labelify = function(settings) {
     $item.bind('focus.label',function() {
       if (this.value === $(this).data("label")) { hideLabel(this); }
     }).bind('blur.label',function(){
-      if (this.value === this.defaultValue) { showLabel(this); }
-    }).data('label',lookup(this).replace(/\n/g,'')); // strip label's newlines
+      if (this.value == '') { showLabel(this); }
+    });
+    $item.data('label', lookup(this).replace(/\n/g,'')) // strip label's newlines
+    $item.data('value', this.value); // initialise remembered value
     
     removeValuesOnExit = function() {
       $labelified_elements.each(function(){
@@ -85,8 +88,10 @@ jQuery.fn.labelify = function(settings) {
     $item.parents("form").submit(removeValuesOnExit);
     $(window).unload(removeValuesOnExit);
     
-    if (this.value !== this.defaultValue) {
-      // user started typing; don't overwrite his/her text!
+    if (this.value !== this.defaultValue || this.defaultValue != '') {
+      // user already started typing; don't overwrite their work!
+      // also, if a value is already set in the field, don't replace it
+      // with a label
       return;
     }
 
